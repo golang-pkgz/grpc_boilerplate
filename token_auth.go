@@ -2,7 +2,6 @@ package grpc_boilerplate
 
 import (
 	"context"
-	"fmt"
 
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
@@ -22,35 +21,39 @@ func ServerTokenAuth(api_token string, api_token_header_name string) grpc.UnaryS
 		info *grpc.UnaryServerInfo,
 		handler grpc.UnaryHandler,
 	) (interface{}, error) {
-		if api_token != "" {
-			if info.FullMethod != "/grpc.health.v1.Health/Check" {
-				err := func(ctx context.Context, tokenHeaderName string, correct_token string) error {
-					md, ok := metadata.FromIncomingContext(ctx)
-					if !ok {
-						return status.Errorf(codes.InvalidArgument, "Retrieving metadata is failed")
-					}
-
-					authHeader, ok := md[api_token_header_name]
-					if !ok {
-						fmt.Println(md)
-						return status.Errorf(codes.Unauthenticated, "Authorization token is not supplied")
-					}
-
-					token := authHeader[0]
-					if token != correct_token {
-						return status.Errorf(codes.Unauthenticated, "Wrong token")
-					}
-
-					return nil
-				}(ctx, api_token_header_name, api_token)
-				if err != nil {
-					return nil, err
-				}
-			}
+		// Token auth disabled if token is empty
+		if api_token == "" {
+			return handler(ctx, req)
 		}
 
-		h, err := handler(ctx, req)
-		return h, err
+		// Allow all requests to healthcheck api
+		if info.FullMethod != "/grpc.health.v1.Health/Check" {
+			return handler(ctx, req)
+		}
+
+		err := func(ctx context.Context, tokenHeaderName string, correct_token string) error {
+			md, ok := metadata.FromIncomingContext(ctx)
+			if !ok {
+				return status.Errorf(codes.InvalidArgument, "Retrieving metadata is failed")
+			}
+
+			authHeader, ok := md[api_token_header_name]
+			if !ok {
+				return status.Errorf(codes.Unauthenticated, "Authorization token is not supplied")
+			}
+
+			token := authHeader[0]
+			if token != correct_token {
+				return status.Errorf(codes.Unauthenticated, "Wrong token")
+			}
+
+			return nil
+		}(ctx, api_token_header_name, api_token)
+		if err != nil {
+			return nil, err
+		}
+
+		return handler(ctx, req)
 	}
 }
 

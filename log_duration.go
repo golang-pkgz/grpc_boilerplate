@@ -8,7 +8,10 @@ import (
 	"google.golang.org/grpc"
 )
 
-func ServerLogDuration() grpc.UnaryServerInterceptor {
+func ServerLogDuration(logger *log.Logger) grpc.UnaryServerInterceptor {
+	if logger == nil {
+		logger = log.Default()
+	}
 
 	return func(ctx context.Context,
 		req interface{},
@@ -19,7 +22,7 @@ func ServerLogDuration() grpc.UnaryServerInterceptor {
 
 		h, err := handler(ctx, req)
 
-		log.Printf("Request - Method:%s\tDuration:%s\tError:%v\n", info.FullMethod, time.Since(start), err)
+		logger.Printf("Request - Method:%s\tDuration:%s\tError:%v\n", info.FullMethod, time.Since(start), err)
 		return h, err
 	}
 }

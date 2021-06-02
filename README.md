@@ -15,7 +15,7 @@ Example server
 ```go
 grpcServer := grpc.NewServer(
     grpc.ChainUnaryInterceptor(
-        grpc_boilerplate.ServerLogDuration(),
+        grpc_boilerplate.ServerLogDuration(nil), // nil for log.Default() as logger
     ),
 )
 ```
