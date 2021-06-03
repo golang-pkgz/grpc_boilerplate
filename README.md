@@ -47,3 +47,15 @@ conn, err := grpc.Dial(
     )),
 )
 ```
+
+### Dial from connectionstring for client
+```golang
+conn, err := grpc_boilerplate.DialFromConnectionString("h2c://clientTokenSecret@localhost:50002", grpc_boilerplate.DIAL_OPTS_DEFAULT...)
+
+if err != nil {
+    log.Fatalf("fail to dial: %v", err)
+}
+defer conn.Close()
+...
+
+```
