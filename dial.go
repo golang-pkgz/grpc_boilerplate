@@ -34,7 +34,7 @@ func parseConnectionString(connection_string string) (string, string, error) {
 var DIAL_OPTS_DEFAULT []grpc.DialOption = []grpc.DialOption{
 	grpc.WithBlock(),
 	grpc.WithInsecure(),
-	grpc.WithTimeout(10 * time.Seconds),
+	grpc.WithTimeout(10 * time.Second),
 }
 
 /*
