@@ -23,11 +23,6 @@ func ServerTokenAuth(apiToken string, apiTokenHeaderName string) grpc.UnaryServe
 		info *grpc.UnaryServerInfo,
 		handler grpc.UnaryHandler,
 	) (interface{}, error) {
-		// Token auth disabled if token is empty
-		if apiToken == "" {
-			return handler(ctx, req)
-		}
-
 		// Allow all requests to healthcheck api
 		if info.FullMethod == "/grpc.health.v1.Health/Check" {
 			return handler(ctx, req)
