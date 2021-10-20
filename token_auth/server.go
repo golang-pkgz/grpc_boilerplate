@@ -9,10 +9,10 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-// Default api token header name, used if apiTokenHeaderName is empty string
+// DefaultApiTokenHeaderName used if apiTokenHeaderName is empty string
 const DefaultApiTokenHeaderName = "api_token"
 
-// Provide token header for authentication
+// ServerTokenAuth provides token header for authentication
 func ServerTokenAuth(apiToken string, apiTokenHeaderName string) grpc.UnaryServerInterceptor {
 	if apiTokenHeaderName == "" {
 		apiTokenHeaderName = DefaultApiTokenHeaderName

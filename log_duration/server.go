@@ -8,7 +8,7 @@ import (
 	"google.golang.org/grpc"
 )
 
-// Log every request duration
+// ServerLogDuration logs every request method, duration and error
 func ServerLogDuration(logger *log.Logger) grpc.UnaryServerInterceptor {
 	if logger == nil {
 		logger = log.Default()

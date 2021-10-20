@@ -10,8 +10,14 @@ import (
 	"google.golang.org/grpc"
 )
 
-func parseConnectionString(connection_string string) (string, string, error) {
-	parsed, err := url.Parse(connection_string)
+// DIAL_OPTS_DEFAULT useful with DialFromConnectionString
+var DIAL_OPTS_DEFAULT []grpc.DialOption = []grpc.DialOption{
+	grpc.WithBlock(),
+	grpc.WithInsecure(),
+}
+
+func parseConnectionString(connectionString string) (string, string, error) {
+	parsed, err := url.Parse(connectionString)
 	if err != nil {
 		return "", "", err
 	}
@@ -31,19 +37,13 @@ func parseConnectionString(connection_string string) (string, string, error) {
 	return parsed.Host, parsed.User.Username(), nil
 }
 
-var DIAL_OPTS_DEFAULT []grpc.DialOption = []grpc.DialOption{
-	grpc.WithBlock(),
-	grpc.WithInsecure(),
-}
-
-/*
-Connect from connectionstring `h2c|h2cs://[<token>@]host:port`
-
-Usage:
-	conn, err := grpc_boilerplate.DialFromConnectionString(cs, grpc_boilerplate.DIAL_OPTS_DEFAULT)
-*/
-func DialFromConnectionString(connection_string string, opts ...grpc.DialOption) (*grpc.ClientConn, error) {
-	hostport, token, err := parseConnectionString(connection_string)
+// DialFromConnectionString
+// Connect from connectionString `h2c|h2cs://[<token>@]host:port`
+//
+// Usage:
+// conn, err := grpc_boilerplate.DialFromConnectionString(cs, grpc_boilerplate.DIAL_OPTS_DEFAULT)
+func DialFromConnectionString(connectionString string, opts ...grpc.DialOption) (*grpc.ClientConn, error) {
+	hostport, token, err := parseConnectionString(connectionString)
 
 	if err != nil {
 		return nil, err

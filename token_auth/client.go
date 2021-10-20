@@ -7,7 +7,7 @@ import (
 	"google.golang.org/grpc/metadata"
 )
 
-// Provide token header for authentication
+// ClientTokenAuth provides token header for authentication
 func ClientTokenAuth(apiToken string, apiTokenHeaderName string) grpc.UnaryClientInterceptor {
 	if apiTokenHeaderName == "" {
 		apiTokenHeaderName = DefaultApiTokenHeaderName

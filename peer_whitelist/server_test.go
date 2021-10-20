@@ -15,7 +15,7 @@ import (
 )
 
 func ExampleServerPeerWhitelist() {
-	whitelist_networks, err := ParseCIDRs([]string{
+	whitelistNetworks, err := ParseCIDRs([]string{
 		"127.0.0.1/24",
 	})
 
@@ -25,7 +25,7 @@ func ExampleServerPeerWhitelist() {
 
 	grpcServer := grpc.NewServer(
 		grpc.ChainUnaryInterceptor(
-			ServerPeerWhitelist(whitelist_networks), // nil for log.Default() as logger
+			ServerPeerWhitelist(whitelistNetworks), // nil for log.Default() as logger
 		),
 	)
 	fmt.Println(grpcServer)
@@ -48,20 +48,20 @@ func TestParseCIDRs(t *testing.T) {
 }
 
 func assertGrpcError(t *testing.T, err error, code codes.Code, msg string) {
-	status, ok := status.FromError(err)
+	st, ok := status.FromError(err)
 	assert.True(t, ok)
-	assert.Equal(t, status.Code(), code)
-	assert.Equal(t, status.Message(), msg)
+	assert.Equal(t, st.Code(), code)
+	assert.Equal(t, st.Message(), msg)
 }
 
 func TestServerPeerWhitelist(t *testing.T) {
-	whitelist_networks, err := ParseCIDRs([]string{
+	whitelistNetworks, err := ParseCIDRs([]string{
 		"127.0.0.1/24",
 	})
 
 	assert.NoError(t, err)
 
-	mw := ServerPeerWhitelist(whitelist_networks)
+	mw := ServerPeerWhitelist(whitelistNetworks)
 
 	// No peer
 	resp, err := mw(
