@@ -6,6 +6,7 @@ import (
 	"net/url"
 	"strings"
 
+	"github.com/golang-pkgz/grpc_boilerplate/token_auth"
 	"google.golang.org/grpc"
 )
 
@@ -49,7 +50,7 @@ func DialFromConnectionString(connection_string string, opts ...grpc.DialOption)
 	}
 
 	if token != "" {
-		opts = append(opts, grpc.WithUnaryInterceptor(ClientTokenAuth(token, "")))
+		opts = append(opts, grpc.WithUnaryInterceptor(token_auth.ClientTokenAuth(token, "")))
 	}
 
 	return grpc.Dial(hostport, opts...)
