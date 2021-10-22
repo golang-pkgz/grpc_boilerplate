@@ -13,7 +13,7 @@ import (
 )
 
 type optionsParser struct {
-	serverCrt string
+	ServerCrt string `schema:"ServerCrt"`
 }
 
 // Parse grpc connectionstring `h2c|h2cs://[<token>@]host:port[?ServerCrt=<path to server cert>]`
@@ -65,8 +65,8 @@ func ParseConnectionString(connectionString string) (hostPort string, dialOption
 	if parsed.Scheme == "h2cs" {
 		creds := credentials.NewTLS(&tls.Config{})
 
-		if queryOptions.serverCrt != "" {
-			creds, err = credentials.NewClientTLSFromFile(queryOptions.serverCrt, "")
+		if queryOptions.ServerCrt != "" {
+			creds, err = credentials.NewClientTLSFromFile(queryOptions.ServerCrt, "")
 			if err != nil {
 				err = fmt.Errorf("could not load tls cert: %s", err)
 				return
