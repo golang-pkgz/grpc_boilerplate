@@ -2,6 +2,7 @@ package connectionstring
 
 import (
 	"crypto/tls"
+	"errors"
 	"fmt"
 	"net/url"
 	"strings"
@@ -13,7 +14,7 @@ import (
 )
 
 type optionsParser struct {
-	serverCrt string
+	ServerCrt string `schema:"ServerCrt"`
 }
 
 // Parse grpc connectionstring `h2c|h2cs://[<token>@]host:port[?ServerCrt=<path to server cert>]`
@@ -63,10 +64,12 @@ func ParseConnectionString(connectionString string) (hostPort string, dialOption
 		return
 	}
 	if parsed.Scheme == "h2cs" {
+		// By default use empty tls config
 		creds := credentials.NewTLS(&tls.Config{})
 
-		if queryOptions.serverCrt != "" {
-			creds, err = credentials.NewClientTLSFromFile(queryOptions.serverCrt, "")
+		// If server cert specified, load it
+		if queryOptions.ServerCrt != "" {
+			creds, err = credentials.NewClientTLSFromFile(queryOptions.ServerCrt, "")
 			if err != nil {
 				err = fmt.Errorf("could not load tls cert: %s", err)
 				return
@@ -75,6 +78,10 @@ func ParseConnectionString(connectionString string) (hostPort string, dialOption
 
 		dialOptions = append(dialOptions, grpc.WithTransportCredentials(creds))
 	} else {
+		if queryOptions.ServerCrt != "" {
+			err = errors.New("ServerCrt cannot be set with insecure connection")
+			return
+		}
 		dialOptions = append(dialOptions, grpc.WithInsecure())
 	}
 
