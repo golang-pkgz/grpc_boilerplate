@@ -8,28 +8,43 @@ import "github.com/golang-pkgz/grpc_boilerplate"
 
 ## Index
 
-- [Variables](<#variables>)
-- [func DialFromConnectionString(connection_string string, opts ...grpc.DialOption) (*grpc.ClientConn, error)](<#func-dialfromconnectionstring>)
+- [func DialFromConnectionString(userAgent string, connectionString string, opts ...grpc.DialOption) (*grpc.ClientConn, error)](<#func-dialfromconnectionstring>)
 
-
-## Variables
-
-```go
-var DIAL_OPTS_DEFAULT []grpc.DialOption = []grpc.DialOption{
-    grpc.WithBlock(),
-    grpc.WithInsecure(),
-}
-```
 
 ## func DialFromConnectionString
 
 ```go
-func DialFromConnectionString(connection_string string, opts ...grpc.DialOption) (*grpc.ClientConn, error)
+func DialFromConnectionString(userAgent string, connectionString string, opts ...grpc.DialOption) (*grpc.ClientConn, error)
 ```
 
-Connect from connectionstring \`h2c|h2cs://\[\<token\>@\]host:port\`
+Connect to grpc sever from connectionString \`h2c|h2cs://\[\<token\>@\]host:port?\<options\>\` See \`connectionstring\.ParseConnectionString\` for \`options\` description
 
-Usage: conn\, err := grpc\_boilerplate\.DialFromConnectionString\(cs\, grpc\_boilerplate\.DIAL\_OPTS\_DEFAULT\)
+# connectionstring
+
+```go
+import "github.com/golang-pkgz/grpc_boilerplate/connectionstring"
+```
+
+## Index
+
+- [func ParseConnectionString(connectionString string) (hostPort string, dialOptions []grpc.DialOption, err error)](<#func-parseconnectionstring>)
+
+
+## func ParseConnectionString
+
+```go
+func ParseConnectionString(connectionString string) (hostPort string, dialOptions []grpc.DialOption, err error)
+```
+
+Parse grpc connectionstring \`h2c|h2cs://\[\<token\>@\]host:port\[?ServerCrt=\<path to server cert\>\]\` Attempt to create generic connectionstring format for grpc connections
+
+schema \* h2c: specifies insecure connection \* h2cs: specifies secure connection Optional loads server cert with \`ServerCrt\` query option
+
+token specifies token for token\_auth interceptor
+
+host:port required server address and port
+
+ServerCrt Path to server certificate \(server\.crt\) Works with TLS enabled \(h2cs://\.\.\.\) Has no effect if connection schema is insecure
 
 # log\_duration
 
@@ -48,7 +63,7 @@ import "github.com/golang-pkgz/grpc_boilerplate/log_duration"
 func ServerLogDuration(logger *log.Logger) grpc.UnaryServerInterceptor
 ```
 
-Log every request duration
+ServerLogDuration logs every request method\, duration and error
 
 <details><summary>Example</summary>
 <p>
@@ -77,7 +92,7 @@ import "github.com/golang-pkgz/grpc_boilerplate/peer_whitelist"
 ## Index
 
 - [func ParseCIDRs(cidrs []string) ([]*net.IPNet, error)](<#func-parsecidrs>)
-- [func PeerWhitelist(whitelist []*net.IPNet) grpc.UnaryServerInterceptor](<#func-peerwhitelist>)
+- [func ServerPeerWhitelist(whitelist []*net.IPNet) grpc.UnaryServerInterceptor](<#func-serverpeerwhitelist>)
 
 
 ## func ParseCIDRs
@@ -86,22 +101,22 @@ import "github.com/golang-pkgz/grpc_boilerplate/peer_whitelist"
 func ParseCIDRs(cidrs []string) ([]*net.IPNet, error)
 ```
 
-Shortcut for easy coverting cidrs string slice to net\.IPNet slice
+ParseCIDRs shortcut for easy converting CIDR\(s\) string slice to net\.IPNet slice
 
-## func PeerWhitelist
+## func ServerPeerWhitelist
 
 ```go
-func PeerWhitelist(whitelist []*net.IPNet) grpc.UnaryServerInterceptor
+func ServerPeerWhitelist(whitelist []*net.IPNet) grpc.UnaryServerInterceptor
 ```
 
-Server peer whitelist interceptor
+ServerPeerWhitelist provides server client whitelist by CIDR\(s\)
 
 <details><summary>Example</summary>
 <p>
 
 ```go
 {
-	whitelist_networks, err := ParseCIDRs([]string{
+	whitelistNetworks, err := ParseCIDRs([]string{
 		"127.0.0.1/24",
 	})
 
@@ -111,7 +126,7 @@ Server peer whitelist interceptor
 
 	grpcServer := grpc.NewServer(
 		grpc.ChainUnaryInterceptor(
-			PeerWhitelist(whitelist_networks),
+			ServerPeerWhitelist(whitelistNetworks),
 		),
 	)
 	fmt.Println(grpcServer)
@@ -137,7 +152,7 @@ import "github.com/golang-pkgz/grpc_boilerplate/token_auth"
 
 ## Constants
 
-Default api token header name\, used if apiTokenHeaderName is empty string
+DefaultApiTokenHeaderName used if apiTokenHeaderName is empty string
 
 ```go
 const DefaultApiTokenHeaderName = "api_token"
@@ -149,7 +164,7 @@ const DefaultApiTokenHeaderName = "api_token"
 func ClientTokenAuth(apiToken string, apiTokenHeaderName string) grpc.UnaryClientInterceptor
 ```
 
-Provide token header for authentication
+ClientTokenAuth provides token header for authentication
 
 <details><summary>Example</summary>
 <p>
@@ -184,7 +199,7 @@ Example client with token auth
 func ServerTokenAuth(apiToken string, apiTokenHeaderName string) grpc.UnaryServerInterceptor
 ```
 
-Provide token header for authentication
+ServerTokenAuth provides token header for authentication
 
 <details><summary>Example</summary>
 <p>

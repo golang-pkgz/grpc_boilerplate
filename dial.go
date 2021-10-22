@@ -1,57 +1,23 @@
 package grpc_boilerplate
 
 import (
-	"errors"
-	"fmt"
-	"net/url"
-	"strings"
-
-	"github.com/golang-pkgz/grpc_boilerplate/token_auth"
+	"github.com/golang-pkgz/grpc_boilerplate/connectionstring"
 	"google.golang.org/grpc"
 )
 
-// DIAL_OPTS_DEFAULT useful with DialFromConnectionString
-var DIAL_OPTS_DEFAULT []grpc.DialOption = []grpc.DialOption{
-	grpc.WithBlock(),
-	grpc.WithInsecure(),
-}
-
-func parseConnectionString(connectionString string) (string, string, error) {
-	parsed, err := url.Parse(connectionString)
-	if err != nil {
-		return "", "", err
-	}
-
-	if parsed.Scheme != "h2c" && parsed.Scheme != "h2cs" {
-		return "", "", fmt.Errorf("unknown scheme: '%s'", parsed.Scheme)
-	}
-
-	if parsed.Scheme == "h2cs" {
-		return "", "", errors.New("h2cs scheme is not supported for now")
-	}
-
-	if !strings.Contains(parsed.Host, ":") {
-		return "", "", fmt.Errorf("host:port does contain port: '%s'", parsed.Host)
-	}
-
-	return parsed.Host, parsed.User.Username(), nil
-}
-
-// DialFromConnectionString
-// Connect from connectionString `h2c|h2cs://[<token>@]host:port`
-//
-// Usage:
-// conn, err := grpc_boilerplate.DialFromConnectionString(cs, grpc_boilerplate.DIAL_OPTS_DEFAULT)
-func DialFromConnectionString(connectionString string, opts ...grpc.DialOption) (*grpc.ClientConn, error) {
-	hostport, token, err := parseConnectionString(connectionString)
+// Connect to grpc sever from connectionString `h2c|h2cs://[<token>@]host:port?<options>`
+// See `connectionstring.ParseConnectionString` for `options` description
+func DialFromConnectionString(userAgent string, connectionString string, opts ...grpc.DialOption) (*grpc.ClientConn, error) {
+	hostPort, parsed_opts, err := connectionstring.ParseConnectionString(connectionString)
+	opts = append(opts, parsed_opts...)
 
 	if err != nil {
 		return nil, err
 	}
 
-	if token != "" {
-		opts = append(opts, grpc.WithUnaryInterceptor(token_auth.ClientTokenAuth(token, "")))
+	if userAgent != "" {
+		opts = append(parsed_opts, grpc.WithUserAgent(userAgent))
 	}
 
-	return grpc.Dial(hostport, opts...)
+	return grpc.Dial(hostPort, opts...)
 }
