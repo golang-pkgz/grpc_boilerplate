@@ -79,7 +79,7 @@ func ParseConnectionString(connectionString string) (hostPort string, dialOption
 		dialOptions = append(dialOptions, grpc.WithTransportCredentials(creds))
 	} else {
 		if queryOptions.ServerCrt != "" {
-			err = errors.New("ServerCrt cannot be set with insecure connection")
+			err = errors.New("ServerCrt must be empty with insecure connection")
 			return
 		}
 		dialOptions = append(dialOptions, grpc.WithInsecure())
