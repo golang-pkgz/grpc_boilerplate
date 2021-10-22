@@ -1,7 +1,4 @@
-all: certs lint test docs
-
-docs:
-	gomarkdoc -o godoc.md ./...
+all: certs lint test
 
 certs:
 	mkdir certs
