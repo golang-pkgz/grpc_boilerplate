@@ -1,6 +1,9 @@
 package grpc_boilerplate
 
 import (
+	"errors"
+	"strings"
+
 	"github.com/golang-pkgz/grpc_boilerplate/connectionstring"
 	"google.golang.org/grpc"
 )
@@ -16,6 +19,9 @@ func DialFromConnectionString(userAgent string, connectionString string, opts ..
 	}
 
 	if userAgent != "" {
+		if strings.Contains(userAgent, "\n") {
+			return nil, errors.New("newline symbol not allowed in user agent string")
+		}
 		opts = append(parsed_opts, grpc.WithUserAgent(userAgent))
 	}
 
